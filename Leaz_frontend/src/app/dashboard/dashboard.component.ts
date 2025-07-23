@@ -8,27 +8,32 @@ import { ConfirmationModalComponent } from '../shared/confirmation-modal/confirm
 import { MoveItemModalComponent } from '../shared/move-item-modal/move-item-modal.component';
 import { Store } from '@ngrx/store';
 import { uploadFile } from '../Store/files.uploaded.actions';
-import { selectFilefirstDocument } from '../Store/files.uploaded.selectors';
+import { selectFilefirstDocument, selectFilesecondDocument } from '../Store/files.uploaded.selectors';
 import { SafeResourceUrl,DomSanitizer } from '@angular/platform-browser';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatSnackBar } from '@angular/material/snack-bar';
 /**
  * The main dashboard component, showing recent documents and binders.
  */
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterLink, ActionMenuComponent, ConfirmationModalComponent, MoveItemModalComponent],
+  styleUrl:'./dashboard.component.scss',
+  imports: [CommonModule, RouterLink, ActionMenuComponent, ConfirmationModalComponent, MoveItemModalComponent,MatExpansionModule,MatProgressBarModule],
   templateUrl: './dashboard.component.html',
 })
 export class DashboardComponent implements OnInit {
+
   private apiService = inject(ApiService);
   private router = inject(Router);
+   // Anjalee's Code Starts Here
    private store = inject(Store);
-   private sanitizer = inject(DomSanitizer)
-  showfile!: Observable<SafeResourceUrl | null>;
   firstDocument: File | null = null;
   secondDocument:File | null = null;
   comparisonResult: any;
    ngOnInit() {  }
+ 
 onFileSelected(type:'firstDocument'|'secondDocument',event:any){
 const file = event.target.files[0];
 if(type == 'firstDocument'){
@@ -67,4 +72,5 @@ onSubmit() {
     alert("Please upload both files before submitting.");
   }
 }
+
 }

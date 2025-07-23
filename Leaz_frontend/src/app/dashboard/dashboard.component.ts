@@ -15,7 +15,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSnackBar } from '@angular/material/snack-bar';
 /**
  * The main dashboard component, showing recent documents and binders.
- */
+*/
 @Component({
   selector: 'app-dashboard',
   standalone: true,

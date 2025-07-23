@@ -1,0 +1,46 @@
+<div *ngIf="(firstFile$ | async) && (secondFile$ | async); else loading">
+  <h2>File Comparison</h2>
+  <div class="comparison-container">
+    <div class="file-column">
+      <h3>File 1</h3>
+      <ng-container *ngFor="let line of leftLines; let i = index">
+        <pre
+          [ngClass]="{
+            same: line.status === 'same',
+            removed: line.status === 'removed'
+          }"
+        >
+          <span class="line-number">{{ i + 1 }}</span>
+          <ng-container *ngIf="line.words; else plainLeftLine">
+            <ng-container *ngFor="let word of line.words">
+              <span [ngClass]="{ 'same': word.status === 'same', 'removed': word.status === 'removed' }">{{ word.value }}</span>
+            </ng-container>
+          </ng-container>
+          <ng-template #plainLeftLine>{{ line.value }}</ng-template>
+        </pre>
+      </ng-container>
+    </div>
+    <div class="file-column">
+      <h3>File 2</h3>
+      <ng-container *ngFor="let line of rightLines; let i = index">
+        <pre
+          [ngClass]="{
+            same: line.status === 'same',
+            added: line.status === 'added'
+          }"
+        >
+          <span class="line-number">{{ i + 1 }}</span>
+          <ng-container *ngIf="line.words; else plainRightLine">
+            <ng-container *ngFor="let word of line.words">
+              <span [ngClass]="{ 'same': word.status === 'same', 'added': word.status === 'added' }">{{ word.value }}</span>
+            </ng-container>
+          </ng-container>
+          <ng-template #plainRightLine>{{ line.value }}</ng-template>
+        </pre>
+      </ng-container>
+    </div>
+  </div>
+</div>
+<ng-template #loading>
+  <p>Loading files for comparison...</p>
+</ng-template>

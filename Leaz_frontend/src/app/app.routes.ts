@@ -7,6 +7,7 @@ import { DocumentDetailComponent } from './document-detail/document-detail.compo
 import { BinderDetailComponent } from './binder-detail/binder-detail.component';
 import { CreateDocumentComponent } from './create-document/create-document.component';
 import { CreateBinderComponent } from './create-binder/create-binder.component';
+import { VisualiserComponent } from './visualiser/visualiser.component';
 
 /**
  * Defines the navigation routes for the application.
@@ -15,11 +16,12 @@ import { CreateBinderComponent } from './create-binder/create-binder.component';
 export const routes: Routes = [
   // Redirect the root path to the dashboard by default.
   { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
-  
+
   // Main application pages
   { path: 'dashboard', component: DashboardComponent },
   { path: 'documents', component: DocumentsListComponent },
   { path: 'binders', component: BindersListComponent },
+  { path: 'visualiser', component: VisualiserComponent },
 
   // Creation pages
   { path: 'documents/new', component: CreateDocumentComponent },

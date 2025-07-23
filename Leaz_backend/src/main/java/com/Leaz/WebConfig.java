@@ -4,16 +4,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.reactive.function.client.WebClient;
 
-/**
- * Global configuration for the web layer, including CORS settings.
- */
 @Configuration
 public class WebConfig {
 
-    /**
-     * Configures CORS to allow all standard methods from the Angular frontend.
-     */
     @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
@@ -26,5 +21,11 @@ public class WebConfig {
                         .allowCredentials(true);
             }
         };
+    }
+
+    // Add this bean to satisfy LLMClient's constructor
+    @Bean
+    public WebClient webClient(WebClient.Builder builder) {
+        return builder.build();
     }
 }

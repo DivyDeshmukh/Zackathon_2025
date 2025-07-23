@@ -63,4 +63,7 @@ export class ApiService {
   createBinder(binder: NewBinder): Observable<Binder> { return this.http.post<Binder>(this.bindersUrl, binder); }
   deleteBinder(id: number): Observable<void> { return this.http.delete<void>(`${this.bindersUrl}/${id}`); }
   updateBinderParent(id: number, parentId: number | null): Observable<Binder> { return this.http.put<Binder>(`${this.bindersUrl}/${id}/move`, { parentId }); }
+compareDocuments(formdata:any):Observable<any>{
+   return this.http.post<any>('http://your-backend-api.com/compare', formdata); 
+}
 }

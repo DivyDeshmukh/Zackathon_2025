@@ -12,7 +12,7 @@ import { selectFilefirstDocument } from '../Store/files.uploaded.selectors';
 import { SafeResourceUrl,DomSanitizer } from '@angular/platform-browser';
 /**
  * The main dashboard component, showing recent documents and binders.
- */
+*/
 @Component({
   selector: 'app-dashboard',
   standalone: true,

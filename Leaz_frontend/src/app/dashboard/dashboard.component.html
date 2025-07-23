@@ -1,117 +1,258 @@
-<header class="mb-10">
-  <h2 class="text-4xl font-extrabold text-gray-900">Dashboard</h2>
-  <p class="text-gray-500">A quick overview of your recent activity.</p>
-</header>
-<!-- <div *ngIf="isLoading" class="text-center text-gray-500"><p>Loading dashboard...</p></div>
-<div *ngIf="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg"><p><strong>Error:</strong> {{ error }}</p></div>
 
-<div *ngIf="!isLoading && !error" class="space-y-12">
-  <section>
-    <h3 class="text-2xl font-bold text-gray-900 mb-4">Recent Documents</h3>
-    <div class="bg-white rounded-xl border border-gray-200">
-      <table class="w-full text-sm text-left text-gray-600">
-        <thead class="text-xs text-gray-700 uppercase bg-gray-50">
-          <tr>
-            <th scope="col" class="px-6 py-3">Title</th>
-            <th scope="col" class="px-6 py-3">Binder</th>
-            <th scope="col" class="px-6 py-3">Status</th>
-            <th scope="col" class="px-6 py-3">Last Modified</th>
-            <th scope="col" class="relative px-6 py-3"><span class="sr-only">Actions</span></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let doc of recentDocuments" class="border-b border-gray-200 hover:bg-gray-50">
-            <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-              <a [routerLink]="['/documents', doc.id]" class="hover:underline">{{ doc.title }}</a>
-            </td>
-            <td class="px-6 py-4">{{ getBinderName(doc.binderId) }}</td>
-            <td class="px-6 py-4">
-              <span class="px-2 py-1 text-xs font-semibold rounded-full"
-                    [ngClass]="{
-                      'bg-blue-100 text-blue-800': doc.status === 'Draft',
-                      'bg-yellow-100 text-yellow-800': doc.status === 'In Review',
-                      'bg-green-100 text-green-800': doc.status === 'Final',
-                      'bg-gray-200 text-gray-800': doc.status === 'Archived'
-                    }">
-                {{ doc.status }}
-              </span>
-            </td>
-            <td class="px-6 py-4">{{ doc.lastModified | date:'medium' }}</td>
-            <td class="px-6 py-4 text-right">
-              <app-action-menu itemType="document" [item]="doc" 
-                (delete)="onDelete(doc, 'document')" 
-                (move)="onMove(doc, 'document')"
-                (copy)="onCopy(doc)"
-                (markAsFinal)="onMarkAsFinal(doc)">
-              </app-action-menu>
-            </td>
-          </tr>
-          <tr *ngIf="recentDocuments.length === 0"><td colspan="5" class="text-center text-gray-500 py-8">No recent documents found.</td></tr>
-        </tbody>
-      </table>
+<!-- Anjalee's Code Starts here -->
+
+<div class="main-container">
+     
+<div class="action-bar">
+  <div class="upload-section">
+    <div class="upload-card">
+      <div class="upload-icon">
+        <i class="fa-solid fa-arrow-down"></i>
+      </div>
+      <div class="file-info" *ngIf="firstDocument">
+        <span class="file-name"><i class="fas fa-file-pdf"></i> {{ firstDocument.name }}</span>
+        <span class="close-icon" (click)="removeFile('firstDocument')">
+          <i class="fas fa-times"></i>
+        </span>
+      </div>
+      <label class="browse-label" *ngIf="!firstDocument">Drop Older Version File
+        <input type="file" (change)="onFileSelected('firstDocument',$event)" hidden />
+      </label>
     </div>
-  </section>
-
-  <section>
-    <h3 class="text-2xl font-bold text-gray-900 mb-4">Recent Binders</h3>
-    <div class="bg-white rounded-xl border border-gray-200">
-      <table class="w-full text-sm text-left text-gray-600">
-        <thead class="text-xs text-gray-700 uppercase bg-gray-50">
-          <tr>
-            <th scope="col" class="px-6 py-3">Binder Name</th>
-            <th scope="col" class="px-6 py-3">Date Created</th>
-            <th scope="col" class="relative px-6 py-3"><span class="sr-only">Actions</span></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let binder of recentBinders" class="border-b border-gray-200 hover:bg-gray-50">
-            <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
-              <a [routerLink]="['/binders', binder.id]" class="hover:underline">{{ binder.name }}</a>
-            </td>
-            <td class="px-6 py-4">{{ binder.dateCreated | date:'mediumDate' }}</td>
-            <td class="px-6 py-4 text-right">
-              <app-action-menu itemType="binder" [item]="binder" 
-                (delete)="onDelete(binder, 'binder')" 
-                (move)="onMove(binder, 'binder')">
-              </app-action-menu>
-            </td>
-          </tr>
-           <tr *ngIf="recentBinders.length === 0"><td colspan="3" class="text-center text-gray-500 py-8">No recent binders found.</td></tr>
-        </tbody>
-      </table>
+    <div class="upload-card">
+      <div class="upload-icon">
+        <i class="fa-solid fa-arrow-down"></i>
+      </div>
+      <div class="file-info" *ngIf="secondDocument">
+        <span class="file-name"><i class="fas fa-file-pdf"></i> {{ secondDocument.name }}</span>
+        <span class="close-icon" (click)="removeFile('secondDocument')">
+          <i class="fas fa-times"></i>
+        </span>
+      </div>
+      <label class="browse-label" *ngIf="!secondDocument">Drop Newer Version File
+        <input type="file" (change)="onFileSelected('secondDocument',$event)" hidden />
+      </label>
     </div>
-  </section>
-</div>
+  </div>
 
-<app-confirmation-modal *ngIf="showDeleteModal" 
-  [itemType]="selectedItemType"
-  (confirm)="confirmDelete()" 
-  (cancel)="closeModals()">
-</app-confirmation-modal>
-
-<app-move-item-modal *ngIf="showMoveModal"
-  [itemType]="selectedItemType"
-  [currentItemId]="modalCurrentItemId!"
-  [currentParentId]="modalCurrentParentId"
-  (move)="confirmMove($event)"
-  (cancel)="closeModals()">
-</app-move-item-modal> -->
-
-<div class="upload-container">
-  <label>Upload Document 1:</label>
-  <input type="file" (change)="onFileSelected('firstDocument', $event)" />
-
-  <label>Upload Document 2:</label>
-  <input type="file" (change)="onFileSelected('secondDocument', $event)" />
-
-  <button (click)="onSubmit()">Submit</button>
-</div>
-<div class="dashboard-actions">
-  <button routerLink="/visualiser" class="compare-btn">Compare</button>
-</div>
-<div *ngIf="showfile | async as file" class="document-container">
-  <div class="preview-section">
-    <h4>Preview</h4>
-    <iframe [src]="file" width="100%" height="500px"> </iframe>
+  <div class="compare-button-wrapper">
+    <button class="compare-button" (click)="onSubmit()">Compare</button>
   </div>
 </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon contracts">
+                        <i class="bi bi-file-earmark-text"></i>
+                    </div>
+                    <div class="stat-change positive">+12%</div>
+                </div>
+                <div class="stat-value">47</div>
+                <div class="stat-label">Contracts Analyzed</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon differences">
+                        <i class="bi bi-exclamation-triangle"></i>
+                    </div>
+                    <div class="stat-change negative">-5%</div>
+                </div>
+                <div class="stat-value">129</div>
+                <div class="stat-label">Critical Differences</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon similarities">
+                        <i class="bi bi-check-circle"></i>
+                    </div>
+                    <div class="stat-change positive">+23%</div>
+                </div>
+                <div class="stat-value">342</div>
+                <div class="stat-label">Similarities Found</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon time">
+                        <i class="bi bi-stopwatch"></i>
+                    </div>
+                    <div class="stat-change positive">-89%</div>
+                </div>
+                <div class="stat-value">2.3s</div>
+                <div class="stat-label">Avg. Analysis Time</div>
+            </div>
+        </div>
+
+       
+        <div class="progress-container">
+            <div class="progress-header">
+                <span style="font-weight: 600; color: #1e293b;">AI Analysis Progress</span>
+                <span style="color: #64748b; font-size: 14px;">Comparing NDA_v2.pdf vs Service_Agreement.pdf</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 75%;"></div>
+            </div>
+        </div>
+
+       
+        <div class="responsive-grid">
+            <div class="comparison-panel">
+                <div class="panel-header">
+                    <div class="panel-title">Contract Comparison</div>
+                    <div class="panel-actions">
+                        <button class="icon-btn">
+                            <i class="bi bi-arrow-clockwise"></i>
+                        </button>
+                        <button class="icon-btn">
+                            <i class="bi bi-download"></i>
+                        </button>
+                        <button class="icon-btn">
+                            <i class="bi bi-three-dots"></i>
+                        </button>
+                    </div>
+                </div>
+
+                
+                <div class="contract-list">
+                    <div class="contract-item selected">
+                        <div class="contract-icon">
+                            <i class="bi bi-file-earmark-pdf"></i>
+                        </div>
+                        <div class="contract-info">
+                            <div class="contract-name">Non-Disclosure Agreement v2.1</div>
+                            <div class="contract-meta">Modified 2 hours ago • 24 pages</div>
+                        </div>
+                        <div class="contract-status status-analyzing">Analyzing</div>
+                    </div>
+
+                    <div class="contract-item">
+                        <div class="contract-icon">
+                            <i class="bi bi-file-earmark-pdf"></i>
+                        </div>
+                        <div class="contract-info">
+                            <div class="contract-name">Service Agreement Template</div>
+                            <div class="contract-meta">Modified 1 day ago • 18 pages</div>
+                        </div>
+                        <div class="contract-status status-analyzed">Analyzed</div>
+                    </div>
+
+                    <div class="contract-item">
+                        <div class="contract-icon">
+                            <i class="bi bi-file-earmark-pdf"></i>
+                        </div>
+                        <div class="contract-info">
+                            <div class="contract-name">Employment Contract - Senior Dev</div>
+                            <div class="contract-meta">Modified 3 days ago • 12 pages</div>
+                        </div>
+                        <div class="contract-status status-pending">Pending</div>
+                    </div>
+                </div>
+
+              
+                <div class="comparison-results">
+                   
+                    <div class="result-section">
+                        <div class="result-header">
+                            <div class="result-type-icon differences-icon">
+                                <i class="bi bi-exclamation-triangle"></i>
+                            </div>
+                            <div class="result-title">Critical Differences</div>
+                            <div class="result-count">8 Found</div>
+                        </div>
+                        <div class="result-items">
+                            <div class="result-item difference">
+                                <strong>Termination Clause:</strong> Document A allows <span class="highlight">30-day notice</span> while Document B requires <span class="highlight">60-day notice</span> for contract termination.
+                            </div>
+                            <div class="result-item difference">
+                                <strong>Liability Cap:</strong> Document A caps liability at <span class="highlight">$100,000</span>, Document B sets no liability limit.
+                            </div>
+                            <div class="result-item difference">
+                                <strong>Governing Law:</strong> Jurisdiction differs - Document A specifies <span class="highlight">Delaware</span>, Document B specifies <span class="highlight">California</span>.
+                            </div>
+                        </div>
+                    </div>
+
+                   
+                    <div class="result-section">
+                        <div class="result-header">
+                            <div class="result-type-icon similarities-icon">
+                                <i class="bi bi-check-circle"></i>
+                            </div>
+                            <div class="result-title">Key Similarities</div>
+                            <div class="result-count">15 Found</div>
+                        </div>
+                        <div class="result-items">
+                            <div class="result-item similarity">
+                                <strong>Confidentiality Period:</strong> Both documents specify a <span class="highlight">5-year confidentiality period</span> post-termination.
+                            </div>
+                            <div class="result-item similarity">
+                                <strong>Intellectual Property:</strong> Identical IP ownership clauses in both documents.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+         
+            <div class="ai-insights">
+                <div class="ai-header">
+                    <div class="ai-avatar">
+                        <i class="bi bi-robot"></i>
+                    </div>
+                    <div class="ai-info">
+                        <h3>AI Legal Assistant</h3>
+                        <p>Analyzing contracts autonomously</p>
+                    </div>
+                </div>
+
+                <div class="insights-content">
+                    <div class="insight-card critical">
+                        <div class="insight-title">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            Critical Risk Identified
+                        </div>
+                        <div class="insight-text">
+                            The liability limitation discrepancy between contracts could expose significant financial risk. Recommend standardizing liability caps across all agreements.
+                        </div>
+                    </div>
+
+                    <div class="insight-card recommendation">
+                        <div class="insight-title">
+                            <i class="bi bi-lightbulb-fill"></i>
+                            Smart Recommendation
+                        </div>
+                        <div class="insight-text">
+                            Consider adopting the 60-day termination notice from Document B as it provides better transition protection for both parties.
+                        </div>
+                    </div>
+
+                    <div class="insight-card warning">
+                        <div class="insight-title">
+                            <i class="bi bi-shield-exclamation"></i>
+                            Compliance Alert
+                        </div>
+                        <div class="insight-text">
+                            Different governing law jurisdictions detected. Ensure all contracts comply with local regulations in their respective jurisdictions.
+                        </div>
+                    </div>
+
+                    <div class="insight-card recommendation">
+                        <div class="insight-title">
+                            <i class="bi bi-graph-up"></i>
+                            Efficiency Insight
+                        </div>
+                        <div class="insight-text">
+                            85% clause similarity detected. Consider creating a master template to standardize common sections and reduce review time.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+         
+
+
+

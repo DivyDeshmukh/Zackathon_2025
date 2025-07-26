@@ -88,6 +88,7 @@
   cursor: pointer;
   transition: all 0.3s ease;
   min-width: 120px;
+  margin:10px;
   
   &:hover:not(:disabled) {
     transform: translateY(-2px);

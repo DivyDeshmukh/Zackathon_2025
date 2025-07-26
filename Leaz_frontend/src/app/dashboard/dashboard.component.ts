@@ -184,4 +184,9 @@ export class DashboardComponent implements OnInit {
     if (change.newClause === null) return "Removed"
     return "Modified"
   }
+  
+  
+  onVisualiserClick() {
+    this.router.navigate(['/visualiser']);
+  }
 }

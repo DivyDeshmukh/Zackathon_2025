@@ -73,4 +73,7 @@ onSubmit() {
   }
 }
 
+  onVisualiserClick() {
+    this.router.navigate(['/visualiser']);
+  }
 }

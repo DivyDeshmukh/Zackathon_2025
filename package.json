@@ -1,6 +1,10 @@
 {
   "dependencies": {
     "angular-froala-wysiwyg": "^4.5.2",
-    "diff": "^8.0.2"
+    "diff": "^8.0.2",
+    "pdfjs-dist": "^5.3.93"
+  },
+  "devDependencies": {
+    "@types/pdfjs-dist": "^2.10.378"
   }
 }

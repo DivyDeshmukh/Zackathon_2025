@@ -8,6 +8,7 @@ import { Observable } from 'rxjs';
 import { ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { diffTrimmedLines, diffWords } from 'diff';
+import * as pdfjsLib from 'pdfjs-dist';
 
 interface DiffWord {
   value: string;
@@ -46,7 +47,7 @@ export class VisualiserComponent {
     });
   }
 
-  private compareFiles(file1: File, file2: File) {
+  private async compareFiles(file1: File, file2: File) {
     Promise.all([this.readFileAsText(file1), this.readFileAsText(file2)]).then(
       ([text1, text2]) => {
         const diff = diffTrimmedLines(text1, text2);

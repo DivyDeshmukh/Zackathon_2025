@@ -1,258 +1,292 @@
-
-<!-- Anjalee's Code Starts here -->
-
+<!-- File Upload Section -->
 <div class="main-container">
-     
-<div class="action-bar">
-  <div class="upload-section">
-    <div class="upload-card">
-      <div class="upload-icon">
-        <i class="fa-solid fa-arrow-down"></i>
+  <div class="action-bar">
+    <div class="upload-section">
+      <div class="upload-card">
+        <div class="upload-icon">
+          <i class="fa-solid fa-arrow-down"></i>
+        </div>
+        <div class="file-info" *ngIf="firstDocument">
+          <span class="file-name"><i class="fas fa-file-pdf"></i> {{ firstDocument.name }}</span>
+          <span class="close-icon" (click)="removeFile('firstDocument')">
+            <i class="fas fa-times"></i>
+          </span>
+        </div>
+        <label class="browse-label" *ngIf="!firstDocument">Drop Older Version File
+          <input type="file" (change)="onFileSelected('firstDocument',$event)" hidden accept=".pdf,.doc,.docx" />
+        </label>
       </div>
-      <div class="file-info" *ngIf="firstDocument">
-        <span class="file-name"><i class="fas fa-file-pdf"></i> {{ firstDocument.name }}</span>
-        <span class="close-icon" (click)="removeFile('firstDocument')">
-          <i class="fas fa-times"></i>
-        </span>
+      <div class="upload-card">
+        <div class="upload-icon">
+          <i class="fa-solid fa-arrow-down"></i>
+        </div>
+        <div class="file-info" *ngIf="secondDocument">
+          <span class="file-name"><i class="fas fa-file-pdf"></i> {{ secondDocument.name }}</span>
+          <span class="close-icon" (click)="removeFile('secondDocument')">
+            <i class="fas fa-times"></i>
+          </span>
+        </div>
+        <label class="browse-label" *ngIf="!secondDocument">Drop Newer Version File
+          <input type="file" (change)="onFileSelected('secondDocument',$event)" hidden accept=".pdf,.doc,.docx" />
+        </label>
       </div>
-      <label class="browse-label" *ngIf="!firstDocument">Drop Older Version File
-        <input type="file" (change)="onFileSelected('firstDocument',$event)" hidden />
-      </label>
     </div>
-    <div class="upload-card">
-      <div class="upload-icon">
-        <i class="fa-solid fa-arrow-down"></i>
-      </div>
-      <div class="file-info" *ngIf="secondDocument">
-        <span class="file-name"><i class="fas fa-file-pdf"></i> {{ secondDocument.name }}</span>
-        <span class="close-icon" (click)="removeFile('secondDocument')">
-          <i class="fas fa-times"></i>
+    <div class="compare-button-wrapper">
+      <button 
+        class="compare-button" 
+        (click)="onSubmit()" 
+        [disabled]="!firstDocument || !secondDocument || isLoading"
+        [class.loading]="isLoading">
+        <span *ngIf="!isLoading">Compare</span>
+        <span *ngIf="isLoading">
+          <i class="fas fa-spinner fa-spin"></i> Analyzing...
         </span>
-      </div>
-      <label class="browse-label" *ngIf="!secondDocument">Drop Newer Version File
-        <input type="file" (change)="onFileSelected('secondDocument',$event)" hidden />
-      </label>
+      </button>
     </div>
   </div>
 
-  <div class="compare-button-wrapper">
-    <button class="compare-button" (click)="onSubmit()">Compare</button>
+  <!-- Error Message -->
+  <div class="error-message" *ngIf="hasError">
+    <i class="bi bi-exclamation-triangle"></i>
+    {{ errorMessage }}
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-container" *ngIf="isLoading">
+    <div class="loading-spinner">
+      <i class="fas fa-cog fa-spin"></i>
+    </div>
+    <p>Analyzing documents with AI...</p>
+  </div>
+
+  <!-- Stats Grid - Show after analysis -->
+  <div class="stats-grid" *ngIf="comparisonResult && !isLoading">
+    <div class="stat-card">
+      <div class="stat-header">
+        <div class="stat-icon contracts">
+          <i class="bi bi-file-earmark-text"></i>
+        </div>
+        <div class="stat-change positive">{{ overallChangePct }}%</div>
+      </div>
+      <div class="stat-value">{{ totalDifferences }}</div>
+      <div class="stat-label">Total Changes</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-header">
+        <div class="stat-icon differences">
+          <i class="bi bi-exclamation-triangle"></i>
+        </div>
+        <div class="stat-change negative">{{ criticalDifferences.length }}</div>
+      </div>
+      <div class="stat-value">{{ criticalDifferences.length }}</div>
+      <div class="stat-label">Critical Differences</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-header">
+        <div class="stat-icon similarities">
+          <i class="bi bi-plus-circle"></i>
+        </div>
+        <div class="stat-change positive">{{ addedClauses.length }}</div>
+      </div>
+      <div class="stat-value">{{ addedClauses.length }}</div>
+      <div class="stat-label">Added Clauses</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-header">
+        <div class="stat-icon time">
+          <i class="bi bi-dash-circle"></i>
+        </div>
+        <div class="stat-change negative">{{ removedClauses.length }}</div>
+      </div>
+      <div class="stat-value">{{ removedClauses.length }}</div>
+      <div class="stat-label">Removed Clauses</div>
+    </div>
+  </div>
+
+  <!-- Progress Container -->
+  <div class="progress-container" *ngIf="isLoading || comparisonResult">
+    <div class="progress-header">
+      <span style="font-weight: 600; color: #1e293b;">AI Analysis Progress</span>
+      <span style="color: #64748b; font-size: 14px;" *ngIf="firstDocument && secondDocument">
+        Comparing {{ firstDocument.name }} vs {{ secondDocument.name }}
+      </span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" [style.width.%]="analysisProgress"></div>
+    </div>
+    <div class="progress-text">{{ analysisProgress.toFixed(0) }}% Complete</div>
+  </div>
+
+  <!-- Results Section -->
+  <div class="responsive-grid" *ngIf="comparisonResult && !isLoading">
+    <div class="comparison-panel">
+      <div class="panel-header">
+        <div class="panel-title">Contract Comparison Results</div>
+        <div class="panel-actions">
+          <button class="icon-btn" (click)="onSubmit()" [disabled]="isLoading">
+            <i class="bi bi-arrow-clockwise"></i>
+          </button>
+          <button class="icon-btn">
+            <i class="bi bi-download"></i>
+          </button>
+          <button class="icon-btn">
+            <i class="bi bi-three-dots"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Document Info -->
+      <div class="contract-list">
+        <div class="contract-item" *ngIf="firstDocument">
+          <div class="contract-icon">
+            <i class="bi bi-file-earmark-pdf"></i>
+          </div>
+          <div class="contract-info">
+            <div class="contract-name">{{ firstDocument.name }}</div>
+            <div class="contract-meta">Original Document</div>
+          </div>
+          <div class="contract-status status-analyzed">Analyzed</div>
+        </div>
+        <div class="contract-item" *ngIf="secondDocument">
+          <div class="contract-icon">
+            <i class="bi bi-file-earmark-pdf"></i>
+          </div>
+          <div class="contract-info">
+            <div class="contract-name">{{ secondDocument.name }}</div>
+            <div class="contract-meta">Updated Document</div>
+          </div>
+          <div class="contract-status status-analyzed">Analyzed</div>
+        </div>
+      </div>
+
+      <!-- Comparison Results -->
+      <div class="comparison-results">
+        <!-- Critical Differences -->
+        <div class="result-section" *ngIf="criticalDifferences.length > 0">
+          <div class="result-header">
+            <div class="result-type-icon differences-icon">
+              <i class="bi bi-exclamation-triangle"></i>
+            </div>
+            <div class="result-title">Critical Differences</div>
+            <div class="result-count">{{ criticalDifferences.length }} Found</div>
+          </div>
+          <div class="result-items">
+            <div class="result-item difference" *ngFor="let change of criticalDifferences">
+              <div class="change-header">
+                <strong>{{ change.term }}</strong>
+                <span class="change-badge {{ getImpactClass(change.impact) }}">
+                  <i class="{{ getChangeTypeIcon(change) }}"></i>
+                  {{ getChangeTypeLabel(change) }}
+                </span>
+              </div>
+              <div class="change-location">{{ change.sectionOrClauseId }}</div>
+              <div class="change-content">
+                <div class="old-text" *ngIf="change.oldClause">
+                  <strong>Original:</strong> {{ change.oldClause }}
+                </div>
+                <div class="new-text" *ngIf="change.newClause">
+                  <strong>Updated:</strong> {{ change.newClause }}
+                </div>
+              </div>
+              <div class="change-percentage">{{ change.wordChangePct }}% change</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Minor Changes -->
+        <div class="result-section" *ngIf="minorDifferences.length > 0">
+          <div class="result-header">
+            <div class="result-type-icon similarities-icon">
+              <i class="bi bi-info-circle"></i>
+            </div>
+            <div class="result-title">Minor Changes</div>
+            <div class="result-count">{{ minorDifferences.length }} Found</div>
+          </div>
+          <div class="result-items">
+            <div class="result-item similarity" *ngFor="let change of minorDifferences">
+              <div class="change-header">
+                <strong>{{ change.term }}</strong>
+                <span class="change-badge {{ getImpactClass(change.impact) }}">
+                  <i class="{{ getChangeTypeIcon(change) }}"></i>
+                  {{ getChangeTypeLabel(change) }}
+                </span>
+              </div>
+              <div class="change-location">{{ change.sectionOrClauseId }}</div>
+              <div class="change-content">
+                <div class="old-text" *ngIf="change.oldClause">
+                  <strong>Original:</strong> {{ change.oldClause }}
+                </div>
+                <div class="new-text" *ngIf="change.newClause">
+                  <strong>Updated:</strong> {{ change.newClause }}
+                </div>
+              </div>
+              <div class="change-percentage">{{ change.wordChangePct }}% change</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Insights -->
+    <div class="ai-insights">
+      <div class="ai-header">
+        <div class="ai-avatar">
+          <i class="bi bi-robot"></i>
+        </div>
+        <div class="ai-info">
+          <h3>AI Legal Assistant</h3>
+          <p>Analysis complete</p>
+        </div>
+      </div>
+      <div class="insights-content">
+        <!-- Overall Summary -->
+        <div class="insight-card summary" *ngIf="overallSummary">
+          <div class="insight-title">
+            <i class="bi bi-file-text"></i>
+            Overall Summary
+          </div>
+          <div class="insight-text">
+            {{ overallSummary }}
+          </div>
+        </div>
+
+        <!-- Critical Risk Alert -->
+        <div class="insight-card critical" *ngIf="criticalDifferences.length > 0">
+          <div class="insight-title">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            Critical Changes Detected
+          </div>
+          <div class="insight-text">
+            {{ criticalDifferences.length }} critical differences found that require immediate attention. 
+            Review these changes carefully as they may significantly impact the contract terms.
+          </div>
+        </div>
+
+        <!-- Change Statistics -->
+        <div class="insight-card recommendation">
+          <div class="insight-title">
+            <i class="bi bi-graph-up"></i>
+            Change Analysis
+          </div>
+          <div class="insight-text">
+            Overall document change: {{ overallChangePct.toFixed(1) }}%. 
+            {{ addedClauses.length }} clauses added, {{ removedClauses.length }} removed, 
+            {{ modifiedClauses.length }} modified.
+          </div>
+        </div>
+
+        <!-- Recommendations based on changes -->
+        <div class="insight-card warning" *ngIf="removedClauses.length > 0">
+          <div class="insight-title">
+            <i class="bi bi-shield-exclamation"></i>
+            Removed Clauses Alert
+          </div>
+          <div class="insight-text">
+            {{ removedClauses.length }} clauses have been removed from the original document. 
+            Ensure these removals are intentional and don't create legal gaps.
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
-
-        <div class="stats-grid">
-            <div class="stat-card">
-                <div class="stat-header">
-                    <div class="stat-icon contracts">
-                        <i class="bi bi-file-earmark-text"></i>
-                    </div>
-                    <div class="stat-change positive">+12%</div>
-                </div>
-                <div class="stat-value">47</div>
-                <div class="stat-label">Contracts Analyzed</div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-header">
-                    <div class="stat-icon differences">
-                        <i class="bi bi-exclamation-triangle"></i>
-                    </div>
-                    <div class="stat-change negative">-5%</div>
-                </div>
-                <div class="stat-value">129</div>
-                <div class="stat-label">Critical Differences</div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-header">
-                    <div class="stat-icon similarities">
-                        <i class="bi bi-check-circle"></i>
-                    </div>
-                    <div class="stat-change positive">+23%</div>
-                </div>
-                <div class="stat-value">342</div>
-                <div class="stat-label">Similarities Found</div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-header">
-                    <div class="stat-icon time">
-                        <i class="bi bi-stopwatch"></i>
-                    </div>
-                    <div class="stat-change positive">-89%</div>
-                </div>
-                <div class="stat-value">2.3s</div>
-                <div class="stat-label">Avg. Analysis Time</div>
-            </div>
-        </div>
-
-       
-        <div class="progress-container">
-            <div class="progress-header">
-                <span style="font-weight: 600; color: #1e293b;">AI Analysis Progress</span>
-                <span style="color: #64748b; font-size: 14px;">Comparing NDA_v2.pdf vs Service_Agreement.pdf</span>
-            </div>
-            <div class="progress-bar">
-                <div class="progress-fill" style="width: 75%;"></div>
-            </div>
-        </div>
-
-       
-        <div class="responsive-grid">
-            <div class="comparison-panel">
-                <div class="panel-header">
-                    <div class="panel-title">Contract Comparison</div>
-                    <div class="panel-actions">
-                        <button class="icon-btn">
-                            <i class="bi bi-arrow-clockwise"></i>
-                        </button>
-                        <button class="icon-btn">
-                            <i class="bi bi-download"></i>
-                        </button>
-                        <button class="icon-btn">
-                            <i class="bi bi-three-dots"></i>
-                        </button>
-                    </div>
-                </div>
-
-                
-                <div class="contract-list">
-                    <div class="contract-item selected">
-                        <div class="contract-icon">
-                            <i class="bi bi-file-earmark-pdf"></i>
-                        </div>
-                        <div class="contract-info">
-                            <div class="contract-name">Non-Disclosure Agreement v2.1</div>
-                            <div class="contract-meta">Modified 2 hours ago • 24 pages</div>
-                        </div>
-                        <div class="contract-status status-analyzing">Analyzing</div>
-                    </div>
-
-                    <div class="contract-item">
-                        <div class="contract-icon">
-                            <i class="bi bi-file-earmark-pdf"></i>
-                        </div>
-                        <div class="contract-info">
-                            <div class="contract-name">Service Agreement Template</div>
-                            <div class="contract-meta">Modified 1 day ago • 18 pages</div>
-                        </div>
-                        <div class="contract-status status-analyzed">Analyzed</div>
-                    </div>
-
-                    <div class="contract-item">
-                        <div class="contract-icon">
-                            <i class="bi bi-file-earmark-pdf"></i>
-                        </div>
-                        <div class="contract-info">
-                            <div class="contract-name">Employment Contract - Senior Dev</div>
-                            <div class="contract-meta">Modified 3 days ago • 12 pages</div>
-                        </div>
-                        <div class="contract-status status-pending">Pending</div>
-                    </div>
-                </div>
-
-              
-                <div class="comparison-results">
-                   
-                    <div class="result-section">
-                        <div class="result-header">
-                            <div class="result-type-icon differences-icon">
-                                <i class="bi bi-exclamation-triangle"></i>
-                            </div>
-                            <div class="result-title">Critical Differences</div>
-                            <div class="result-count">8 Found</div>
-                        </div>
-                        <div class="result-items">
-                            <div class="result-item difference">
-                                <strong>Termination Clause:</strong> Document A allows <span class="highlight">30-day notice</span> while Document B requires <span class="highlight">60-day notice</span> for contract termination.
-                            </div>
-                            <div class="result-item difference">
-                                <strong>Liability Cap:</strong> Document A caps liability at <span class="highlight">$100,000</span>, Document B sets no liability limit.
-                            </div>
-                            <div class="result-item difference">
-                                <strong>Governing Law:</strong> Jurisdiction differs - Document A specifies <span class="highlight">Delaware</span>, Document B specifies <span class="highlight">California</span>.
-                            </div>
-                        </div>
-                    </div>
-
-                   
-                    <div class="result-section">
-                        <div class="result-header">
-                            <div class="result-type-icon similarities-icon">
-                                <i class="bi bi-check-circle"></i>
-                            </div>
-                            <div class="result-title">Key Similarities</div>
-                            <div class="result-count">15 Found</div>
-                        </div>
-                        <div class="result-items">
-                            <div class="result-item similarity">
-                                <strong>Confidentiality Period:</strong> Both documents specify a <span class="highlight">5-year confidentiality period</span> post-termination.
-                            </div>
-                            <div class="result-item similarity">
-                                <strong>Intellectual Property:</strong> Identical IP ownership clauses in both documents.
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-         
-            <div class="ai-insights">
-                <div class="ai-header">
-                    <div class="ai-avatar">
-                        <i class="bi bi-robot"></i>
-                    </div>
-                    <div class="ai-info">
-                        <h3>AI Legal Assistant</h3>
-                        <p>Analyzing contracts autonomously</p>
-                    </div>
-                </div>
-
-                <div class="insights-content">
-                    <div class="insight-card critical">
-                        <div class="insight-title">
-                            <i class="bi bi-exclamation-triangle-fill"></i>
-                            Critical Risk Identified
-                        </div>
-                        <div class="insight-text">
-                            The liability limitation discrepancy between contracts could expose significant financial risk. Recommend standardizing liability caps across all agreements.
-                        </div>
-                    </div>
-
-                    <div class="insight-card recommendation">
-                        <div class="insight-title">
-                            <i class="bi bi-lightbulb-fill"></i>
-                            Smart Recommendation
-                        </div>
-                        <div class="insight-text">
-                            Consider adopting the 60-day termination notice from Document B as it provides better transition protection for both parties.
-                        </div>
-                    </div>
-
-                    <div class="insight-card warning">
-                        <div class="insight-title">
-                            <i class="bi bi-shield-exclamation"></i>
-                            Compliance Alert
-                        </div>
-                        <div class="insight-text">
-                            Different governing law jurisdictions detected. Ensure all contracts comply with local regulations in their respective jurisdictions.
-                        </div>
-                    </div>
-
-                    <div class="insight-card recommendation">
-                        <div class="insight-title">
-                            <i class="bi bi-graph-up"></i>
-                            Efficiency Insight
-                        </div>
-                        <div class="insight-text">
-                            85% clause similarity detected. Consider creating a master template to standardize common sections and reduce review time.
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-         
-
-
-

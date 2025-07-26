@@ -1,5 +1,12 @@
 package com.Leaz.contract;
 
+import com.Leaz.Document;
+import com.Leaz.DocumentRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.time.LocalDateTime;
+import org.springframework.web.multipart.MultipartFile;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -15,6 +22,11 @@ import java.io.IOException;
 public class ContractComparisonController {
 
     private final ContractComparisonService comparisonService;
+    @Autowired
+    private DocumentRepository documentRepository;
+    @Autowired
+    private final FileParser fileParser;
+
 
     /**
      * POST /api/contracts/compare-contracts
@@ -41,7 +53,26 @@ public class ContractComparisonController {
         }
 
         try {
-            // 2. Delegate to service
+            String oldContent = fileParser.parse(oldFile);
+            String newContent = fileParser.parse(newFile);
+
+            Document oldDoc = new Document();
+            oldDoc.setTitle(oldFile.getOriginalFilename());
+            oldDoc.setContent(oldContent);
+            oldDoc.setStatus("Uploaded");
+            oldDoc.setDateCreated(LocalDateTime.now());
+            oldDoc.setLastModified(LocalDateTime.now());
+            documentRepository.save(oldDoc);
+
+            Document newDoc = new Document();
+            newDoc.setTitle(newFile.getOriginalFilename());
+            newDoc.setContent(newContent);
+            newDoc.setStatus("Uploaded");
+            newDoc.setDateCreated(LocalDateTime.now());
+            newDoc.setLastModified(LocalDateTime.now());
+            documentRepository.save(newDoc);
+            
+            // 3. Call comparison service
             CompareResponse response = comparisonService.compare(oldFile, newFile);
             return ResponseEntity.ok(response);
 

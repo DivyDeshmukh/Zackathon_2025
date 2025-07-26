@@ -64,6 +64,6 @@ export class ApiService {
   deleteBinder(id: number): Observable<void> { return this.http.delete<void>(`${this.bindersUrl}/${id}`); }
   updateBinderParent(id: number, parentId: number | null): Observable<Binder> { return this.http.put<Binder>(`${this.bindersUrl}/${id}/move`, { parentId }); }
 compareDocuments(formdata:any):Observable<any>{
-   return this.http.post<any>('http://your-backend-api.com/compare', formdata); 
+   return this.http.post<any>('http://localhost:8080/api/contracts/compare-contracts', formdata); 
 }
 }
